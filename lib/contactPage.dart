@@ -1,9 +1,8 @@
+import 'dart:async';
 import 'package:figma_design/AddNewContact.dart';
 import 'package:figma_design/ContactPageController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import 'Model/Contacts.dart';
 
 class ContactPage extends GetView<ContactPageController> {
   final controller = Get.put(ContactPageController());
@@ -45,6 +44,14 @@ class ContactPage extends GetView<ContactPageController> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
+                onChanged: (value) {
+                  if (controller.debounce?.isActive ?? false) {
+                    controller.debounce?.cancel();
+                  }
+                  controller.debounce = Timer(Duration(milliseconds: 500), () {
+                    controller.displaySearchItem();
+                  });
+                },
                 controller: controller.search,
                 decoration: const InputDecoration(
                     isDense: true,
@@ -112,7 +119,7 @@ class ContactPage extends GetView<ContactPageController> {
           onPressed: () async {
             var result = await Get.to(() => AddNewContact(),
                 arguments: {"isFromProfile": false});
-            if(result == true){
+            if (result == true) {
               controller.getAllContacts();
             }
           },
