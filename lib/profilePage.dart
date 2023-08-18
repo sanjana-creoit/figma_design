@@ -81,16 +81,17 @@ class ProfilePage extends GetView<ProfilePageController> {
                     ),
               Padding(
                 padding: const EdgeInsets.only(top: 24),
-                child: controller.isValueUpdate.value == true
-                    ? CircularProgressIndicator()
-                    : Text(
+                child:
+                controller.isValueUpdate.value == null
+                    ? const CircularProgressIndicator()
+                    :
+                Text(
                         "${controller.contacts.firstName}",
                         style: const TextStyle(
                             fontSize: 32, color: Color(0xFF001E2F)),
                       ),
               ),
-              controller.isValueUpdate.value == true
-                  ? Container()
+              controller.isValueUpdate.value == null ? Container()
                   : Text(
                       "${(controller.contacts.phoneNo)}",
                       style: const TextStyle(
