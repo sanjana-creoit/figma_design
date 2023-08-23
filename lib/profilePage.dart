@@ -12,6 +12,7 @@ class ProfilePage extends GetView<ProfilePageController> {
 
   final controller = Get.put(ProfilePageController());
   final homeController = Get.put(HomePageController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,17 +82,18 @@ class ProfilePage extends GetView<ProfilePageController> {
                     ),
               Padding(
                 padding: const EdgeInsets.only(top: 24),
-                child:
-                controller.isValueUpdate.value == null
-                    ? const CircularProgressIndicator()
-                    :
-                Text(
-                        "${controller.contacts.firstName}",
-                        style: const TextStyle(
-                            fontSize: 32, color: Color(0xFF001E2F)),
-                      ),
+                child: Text(
+                  "${controller.contacts.firstName}",
+                  style:
+                      const TextStyle(fontSize: 32, color: Color(0xFF001E2F)),
+                ),
               ),
-              controller.isValueUpdate.value == null ? Container()
+              controller.isValueUpdate.value == true
+                  ? Text(
+                      "${(controller.contacts.phoneNo)}",
+                      style: const TextStyle(
+                          color: Color(0xFF74777F), fontSize: 16),
+                    )
                   : Text(
                       "${(controller.contacts.phoneNo)}",
                       style: const TextStyle(

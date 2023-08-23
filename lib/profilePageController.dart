@@ -7,7 +7,7 @@ class ProfilePageController extends GetxController {
   Contacts contacts = Contacts();
   late int? id = contacts.id;
 
-  RxBool isValueUpdate = true.obs;
+  RxBool isValueUpdate = false.obs;
   RxString name = "".obs;
   RxString imagePath = "".obs;
 
