@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:badges/badges.dart' as badges;
@@ -8,8 +9,22 @@ import 'ProfilePageController.dart';
 
 class ChatPageController extends GetxController {
   Timer? debounce;
+
+  @override
+  void dispose() {
+    debounce?.cancel();
+    super.dispose();
+  }
+
+  void onInit(){
+    if(search.text.isEmpty){
+     filteredResult.value = detailsList;
+    }
+    super.onInit();
+  }
+
   final TextEditingController search = TextEditingController();
-  RxList<Contact> filteredResult = RxList<Contact>([]);
+  RxList<Contact> filteredResult = RxList<Contact>.empty(growable: true);
   Contact contact = Contact();
   RxBool isLoading = false.obs;
   RxList<Contact> detailsList = [

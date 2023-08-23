@@ -1,5 +1,5 @@
-
 import 'dart:async';
+import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'chatsPageController.dart';
@@ -9,7 +9,6 @@ class ChatsPage extends GetView<ChatPageController> {
 
   @override
   Widget build(BuildContext context) {
-    controller.filteredResult = controller.detailsList;
     return Scaffold(
       appBar: AppBar(
           elevation: 0,
@@ -17,13 +16,16 @@ class ChatsPage extends GetView<ChatPageController> {
           title: Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
             child: TextFormField(
+              textCapitalization: TextCapitalization.sentences,
               onChanged: (value) {
                 controller.isLoading(true);
                 if (controller.debounce?.isActive ?? false) {
                   controller.debounce?.cancel();
                 }
-                controller.debounce = Timer(Duration(milliseconds: 500), () {
+                controller.debounce =
+                    Timer(const Duration(milliseconds: 500), () {
                   controller.displaySearchList();
+                  Fimber.d("Write Search LIst: ${controller.filteredResult}");
                 });
               },
               controller: controller.search,
@@ -39,19 +41,26 @@ class ChatsPage extends GetView<ChatPageController> {
                   hintStyle: TextStyle(fontSize: 16, color: Color(0xFF74777F))),
             ),
           )),
-      body: Obx(() {
-        return ListView.builder(
-            itemCount: controller.filteredResult.length,
-            itemBuilder: (context, index) {
-              return Obx(() {
-                return controller.isLoading.isTrue
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : controller.chatItem(controller.filteredResult[index]);
-              });
-            });
-      }),
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(Get.context!).unfocus();
+        },
+        child: Obx(
+           () {
+            return ListView.builder(
+                shrinkWrap: true,
+                itemCount: controller.filteredResult.length,
+                itemBuilder: (context, index) {
+                  Fimber.d("Write Filtered List: ${controller.filteredResult}");
+                  return controller.isLoading.isTrue
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : controller.chatItem(controller.filteredResult[index]);
+                });
+          }
+        ),
+      ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 16, right: 16),
         child: FloatingActionButton(

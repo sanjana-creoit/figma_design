@@ -86,9 +86,7 @@ class ProfilePage extends GetView<ProfilePageController> {
                 child:
                    controller.isFromChat == true ? Text(controller.name.value ?? "",style: const TextStyle(
                        fontSize: 32, color: Color(0xFF001E2F))) :
-                controller.isValueUpdate.value == true
-                    ? const CircularProgressIndicator()
-                    : Text(
+                Text(
                         "${controller.contacts.firstName}",
                         style: const TextStyle(
                             fontSize: 32, color: Color(0xFF001E2F)),
@@ -96,7 +94,7 @@ class ProfilePage extends GetView<ProfilePageController> {
               ),
               controller.isFromChat == true ? Container() :
               controller.isValueUpdate.value == true
-                  ? Container()
+                  ? Text("${controller.contacts.phoneNo}")
                   : Text(
                       "${(controller.contacts.phoneNo)}",
                       style: const TextStyle(
