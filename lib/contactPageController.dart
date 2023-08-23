@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:figma_design/Model/database_helper.dart';
 import 'package:figma_design/ProfilePage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'Model/Contacts.dart';
 import 'Model/Details.dart';
@@ -8,10 +10,21 @@ import 'ProfilePageController.dart';
 
 class ContactPageController extends GetxController {
   final DatabaseHelper databaseHelper = DatabaseHelper();
-  bool result = true;
+  Contacts contacts = Contacts();
+  RxBool isLoading = false.obs;
+  Contact contact = Contact();
+  Timer? debounce;
+  List<Contacts> filteredResult = List.empty(growable: true);
 
   @override
-  onInit() {
+  void dispose() {
+    debounce?.cancel();
+    super.dispose();
+  }
+
+
+  @override
+  onInit() async {
     databaseHelper.getAllContact();
     print("Contact List ...");
     super.onInit();
@@ -29,20 +42,24 @@ class ContactPageController extends GetxController {
         itemCount: contactList.length,
         itemBuilder: (context, index) {
           return GestureDetector(
-            onTap: () {
+            onTap: () async {
               ProfilePageController profilePageController =
-                  Get.put(ProfilePageController());
+              Get.put(ProfilePageController());
               profilePageController.contacts = contactList[index];
-              Get.to(
-                () => ProfilePage(),
+              var result = await Get.to(() => ProfilePage(),
+                  arguments: {
+                "isFromChat":false}
               );
+              if (result == true) {
+                getAllContacts();
+              }
             },
             child: Row(
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Image.asset(
-                    contactList[index].image ?? "assets/images/contact.png", // Todo
+                    contactList[index].image ?? "assets/images/profile.jpeg",
                     height: 40,
                     width: 40,
                   ),
@@ -50,7 +67,7 @@ class ContactPageController extends GetxController {
                 Text(
                   contactList[index].firstName ?? "",
                   style:
-                      const TextStyle(color: Color(0xFF001E2F), fontSize: 16),
+                  const TextStyle(color: Color(0xFF001E2F), fontSize: 16),
                 )
               ],
             ),
@@ -62,19 +79,50 @@ class ContactPageController extends GetxController {
     contactList.value = await databaseHelper.getAllContact();
     print("WRITE CONTACT LIST: $contactList");
     contactList.refresh();
-    alphabets.value = List.generate(26, (index) => String.fromCharCode(index + 65))
-        .map((e) => contactList.any((c) => c.firstName?.startsWith(e) == true)
+    alphabets.value =
+        List.generate(26, (index) => String.fromCharCode(index + 65))
+            .map((e) =>
+        contactList.any((c) => c.firstName?.startsWith(e) == true)
             ? Alphabets(
-                e,
-                contactList
-                    .where((cl) => cl.firstName?.startsWith(e) == true)
-                    .toList())
+            e,
+            contactList
+                .where((cl) => cl.firstName?.startsWith(e) == true)
+                .toList())
             : null)
-        .toList()
-        .where((element) => element != null)
-        .map((e) => e as Alphabets)
-        .toList();
+            .toList()
+            .where((element) => element != null)
+            .map((e) => e as Alphabets)
+            .toList();
     alphabets.refresh();
     print("alphabets length = ${alphabets.length}");
+  }
+
+  void displaySearchItem() {
+    List<Contacts> searchResult = [];
+    if (search.text.isEmpty) {
+      searchResult = contactList;
+    } else {
+      searchResult = contactList
+          .where((e) => e.firstName != null && e.firstName!.contains(search.text))
+          .toList();
+    }
+    filteredResult = searchResult;
+    alphabets.value =
+        List.generate(26, (index) => String.fromCharCode(index + 65))
+            .map((e) =>
+        filteredResult.any((c) => c.firstName?.startsWith(e) == true)
+            ? Alphabets(
+            e,
+            filteredResult
+                .where((cl) => cl.firstName?.startsWith(e) == true)
+                .toList())
+            : null)
+            .toList()
+            .where((element) => element != null)
+            .map((e) => e as Alphabets)
+            .toList();
+    alphabets.refresh();
+    print("alphabets length = ${alphabets.length}");
+    print("FILTERED RESULT: $filteredResult");
   }
 }

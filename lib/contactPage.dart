@@ -1,9 +1,8 @@
+import 'dart:async';
 import 'package:figma_design/AddNewContact.dart';
 import 'package:figma_design/ContactPageController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import 'Model/Contacts.dart';
 
 class ContactPage extends GetView<ContactPageController> {
   final controller = Get.put(ContactPageController());
@@ -45,6 +44,14 @@ class ContactPage extends GetView<ContactPageController> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
+                onChanged: (value) {
+                  if (controller.debounce?.isActive ?? false) {
+                    controller.debounce?.cancel();
+                  }
+                  controller.debounce = Timer(Duration(milliseconds: 500), () {
+                    controller.displaySearchItem();
+                  });
+                },
                 controller: controller.search,
                 decoration: const InputDecoration(
                     isDense: true,
@@ -60,43 +67,49 @@ class ContactPage extends GetView<ContactPageController> {
               ),
             ),
             Obx(() {
-              return ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: controller.alphabets.length,
-                  itemBuilder: (context, index) {
-                    print("alphabet = ${controller.alphabets[index].alphabet}");
-                    return controller.alphabets.isEmpty
-                        ? const Center(
-                            child: Text(
-                            "No Contact Found",
-                            style: TextStyle(fontSize: 18),
-                          ))
-                        : Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 34, left: 16, right: 8, bottom: 8),
+              return controller.contactList.isEmpty == true
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                      color: Colors.blueAccent,
+                    ))
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: controller.alphabets.length,
+                      itemBuilder: (context, index) {
+                        print(
+                            "alphabet = ${controller.alphabets[index].alphabet}");
+                        return controller.alphabets.isEmpty
+                            ? const Center(
                                 child: Text(
-                                  controller.alphabets[index].alphabet,
-                                  style: const TextStyle(
-                                      color: Color(0xFF1B72C0),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: controller.displayContact(
-                                    controller.alphabets[index].contacts,
+                                "No Contact Found",
+                                style: TextStyle(fontSize: 18),
+                              ))
+                            : Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 34, left: 16, right: 8, bottom: 8),
+                                    child: Text(
+                                      controller.alphabets[index].alphabet,
+                                      style: const TextStyle(
+                                          color: Color(0xFF1B72C0),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          );
-                  });
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: controller.displayContact(
+                                        controller.alphabets[index].contacts,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                      });
             })
           ],
         ),
@@ -112,7 +125,7 @@ class ContactPage extends GetView<ContactPageController> {
           onPressed: () async {
             var result = await Get.to(() => AddNewContact(),
                 arguments: {"isFromProfile": false});
-            if(result == true){
+            if (result == true) {
               controller.getAllContacts();
             }
           },
