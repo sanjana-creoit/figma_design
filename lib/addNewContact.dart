@@ -1,3 +1,4 @@
+import 'package:figma_design/profilePage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'NewContactController.dart';
@@ -6,7 +7,7 @@ class AddNewContact extends GetView<NewContactController> {
   final controller = Get.put(NewContactController());
   String? contacts;
 
- bool result =  false;
+  bool result = false;
 
   AddNewContact({super.key, this.contacts});
 
@@ -40,28 +41,29 @@ class AddNewContact extends GetView<NewContactController> {
                         ));
             }),
             Obx(() {
-              return
-                Container(
-                  width: 200,
-                  child: DropdownButtonFormField(items: controller.image
-                    .map((String item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(
-                    item,
-                    style: const TextStyle(
-                      fontSize: 14,
-                    ),
-                  ),
-              ))
-                    .toList(),
+              return Container(
+                width: 200,
+                child: DropdownButtonFormField(
+                  items: controller.image
+                      .map((String item) => DropdownMenuItem<String>(
+                            value: item,
+                            child: Text(
+                              item,
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                          ))
+                      .toList(),
                   hint: Text("Select Image"),
                   value: controller.selectedValue.value,
                   onChanged: (value) {
-                  print('$value');
-                  controller.selectedValue.value = value;
-                  controller.update();
-              },),
-                );
+                    print('$value');
+                    controller.selectedValue.value = value;
+                    controller.update();
+                  },
+                ),
+              );
             }),
             Form(
                 key: controller.formKey,
@@ -178,13 +180,16 @@ class AddNewContact extends GetView<NewContactController> {
                         int.tryParse(controller.phoneNumber.text);
                     controller.contacts.address = controller.address.text;
                     controller.contacts.city = controller.city.text;
-                    await controller.databaseHelper
-                        .insertContact(controller.contacts);
-                  if(controller.isFromProfile == true){
-                    Get.back(result: controller.contacts);
-                  }else{
-                    Get.back(result: true);
-                  }
+                    if (controller.isFromProfile == true) {
+                      await controller.databaseHelper
+                          .updateContact(controller.contacts);
+                      Get.back(result: controller.contacts);
+                    } else {
+                      await controller.databaseHelper
+                          .insertContact(controller.contacts);
+                      await controller.databaseHelper.deleteContact(controller.contacts.id ?? 0);
+                      Get.back(result: true);
+                    }
                   }
                 },
                 child: const Text(

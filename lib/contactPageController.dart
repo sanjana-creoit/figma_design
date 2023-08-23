@@ -1,6 +1,7 @@
 import 'package:figma_design/Model/database_helper.dart';
 import 'package:figma_design/ProfilePage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'Model/Contacts.dart';
 import 'Model/Details.dart';
@@ -8,10 +9,11 @@ import 'ProfilePageController.dart';
 
 class ContactPageController extends GetxController {
   final DatabaseHelper databaseHelper = DatabaseHelper();
-  bool result = true;
+  Contacts contacts = Contacts();
+  RxBool isLoading = false.obs;
 
   @override
-  onInit() {
+  onInit() async{
     databaseHelper.getAllContact();
     print("Contact List ...");
     super.onInit();
@@ -29,20 +31,21 @@ class ContactPageController extends GetxController {
         itemCount: contactList.length,
         itemBuilder: (context, index) {
           return GestureDetector(
-            onTap: () {
-              ProfilePageController profilePageController =
-                  Get.put(ProfilePageController());
+            onTap: () async {
+              ProfilePageController profilePageController = Get.put(ProfilePageController());
               profilePageController.contacts = contactList[index];
-              Get.to(
-                () => ProfilePage(),
-              );
+           var result = await  Get.to(() => ProfilePage());
+           if(result == true){
+             getAllContacts();
+           }
             },
             child: Row(
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Image.asset(
-                    contactList[index].image ?? "assets/images/contact.png", // Todo
+                  child:
+                  Image.asset(
+                    contactList[index].image ?? "assets/images/contact.png",
                     height: 40,
                     width: 40,
                   ),
@@ -62,18 +65,20 @@ class ContactPageController extends GetxController {
     contactList.value = await databaseHelper.getAllContact();
     print("WRITE CONTACT LIST: $contactList");
     contactList.refresh();
-    alphabets.value = List.generate(26, (index) => String.fromCharCode(index + 65))
-        .map((e) => contactList.any((c) => c.firstName?.startsWith(e) == true)
-            ? Alphabets(
-                e,
-                contactList
-                    .where((cl) => cl.firstName?.startsWith(e) == true)
-                    .toList())
-            : null)
-        .toList()
-        .where((element) => element != null)
-        .map((e) => e as Alphabets)
-        .toList();
+    alphabets.value =
+        List.generate(26, (index) => String.fromCharCode(index + 65))
+            .map((e) =>
+                contactList.any((c) => c.firstName?.startsWith(e) == true)
+                    ? Alphabets(
+                        e,
+                        contactList
+                            .where((cl) => cl.firstName?.startsWith(e) == true)
+                            .toList())
+                    : null)
+            .toList()
+            .where((element) => element != null)
+            .map((e) => e as Alphabets)
+            .toList();
     alphabets.refresh();
     print("alphabets length = ${alphabets.length}");
   }
